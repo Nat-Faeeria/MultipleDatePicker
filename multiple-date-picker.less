@@ -13,6 +13,11 @@
 @pickable-day-picked-background: #C6000B;
 @pickable-day-picked-color: #fff;
 
+@highlighted-nav-background :  #c6000b;
+@clr-light-grey: #ededed ;
+@clr-mid-grey: #bdbdbd ;
+@clr-dark-grey: #737573 ;
+
 .text-center{
   text-align: center;
 }
@@ -30,19 +35,28 @@
 
 .picker-navigate{
   width: 16.66%;
-}
-
-.picker-navigate:hover{
+  background-color: @clr-light-grey;
+  padding: 7px 0px;
+  
+  &:hover{
   cursor: pointer;
+  background-color: @clr-mid-grey;
+  }
 }
 
 .picker-navigate.disabled, .picker-navigate.disabled:hover{
   color:#ddd;
   cursor: default;
 }
+.picker-navigate.highlighted, .picker-navigate.highlighted:hover{
+  background: @highlighted-nav-background;
+  color: #fff;
+  font-weight: bold;
+}
 
 .picker-month{
   width: 66.66%;
+  font-weight: bold;
 }
 
 .picker-days-week-row > div{
