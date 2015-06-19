@@ -70,7 +70,11 @@ angular.module('multipleDatePicker', [])
                  * Type: boolean
                  * if true can't go in futur months after today's month
                  * */
-                disallowGoFuturMonths: '='
+                disallowGoFuturMonths: '=',
+
+                ngModel: '=',
+
+                format: '=?'
             },
             template: '<div class="multiple-date-picker">' +
             '<div class="picker-top-row">' +
@@ -91,9 +95,9 @@ angular.module('multipleDatePicker', [])
 
                 /*utility functions*/
                 var checkNavigationButtons = function () {
-                        var today = moment(),
-                            previousMonth = moment(scope.month).subtract(1, 'month'),
-                            nextMonth = moment(scope.month).add(1, 'month');
+                        var today = moment().format(scope.format),
+                            previousMonth = moment(scope.month,scope.format).subtract(1, 'month'),
+                            nextMonth = moment(scope.month,scope.format).add(1, 'month');
                         scope.disableBackButton = scope.disallowBackPastMonths && today.isAfter(previousMonth, 'month');
                         scope.disableNextButton = scope.disallowGoFuturMonths && today.isBefore(nextMonth, 'month');
                     },
@@ -117,6 +121,7 @@ angular.module('multipleDatePicker', [])
 
                 /*scope functions*/
                 scope.$watch('daysSelected', function (newValue) {
+                    console.log("daysSelected");
                     if (newValue) {
                         var momentDates = [];
                         newValue.map(function (timestamp) {
@@ -146,6 +151,7 @@ angular.module('multipleDatePicker', [])
                     scope.generate();
                 }, true);
 
+
                 //default values
                 scope.month = scope.month || moment().startOf('day');
                 scope.days = [];
@@ -155,6 +161,16 @@ angular.module('multipleDatePicker', [])
                 scope.disableBackButton = false;
                 scope.disableNextButton = false;
                 scope.daysOfWeek = getDaysOfWeek();
+                scope.format= scope.format || "DD/MM/YYYY";
+
+
+                scope.$watch('ngModel', function(){
+                    scope.convertedDaysSelected=[];
+                    scope.ngModel.forEach(function(elt){
+                        scope.convertedDaysSelected.push(moment(elt,scope.format));
+                    });
+                    scope.generate();
+                });
 
                 /**
                  * Called when user clicks a date
@@ -181,18 +197,47 @@ angular.module('multipleDatePicker', [])
                         momentDate.selected = !momentDate.selected;
 
                         if (momentDate.selected) {
-                            scope.convertedDaysSelected.push(momentDate);
+                            scope.convertedDaysSelected.push(momentDate.format(scope.format));
                         } else {
                             scope.convertedDaysSelected = scope.convertedDaysSelected.filter(function (date) {
                                 return date.valueOf() !== momentDate.valueOf();
                             });
                         }
-
-                        if (typeof(scope.callback) === "function") {
-                            $log.warn('callback option deprecated, please use dayClick');
-                            scope.callback({timestamp: momentDate.valueOf(), selected: momentDate.selected});
-                        }
                     }
+
+                    var formatedMoments = [];
+                    scope.convertedDaysSelected.forEach(function(elt){
+                        if(typeof elt === "object") {
+                            formatedMoments.push(elt._i);
+                        } else {
+                            formatedMoments.push(elt);
+                        }
+                    });
+
+                    formatedMoments=formatedMoments.sort(function(a,b){
+                        var el1 = a.split("/"), el2 = b.split("/");
+                        if (el1[0]>el2[0]){
+                            return 1;
+                        }
+                        return -1;
+                    });
+                    formatedMoments=formatedMoments.sort(function(a,b){
+                        var el1 = a.split("/"), el2 = b.split("/");
+                        if (el1[1]>el2[1]){
+                            return 1;
+                        }
+                        return -1;
+                    });
+                    formatedMoments=formatedMoments.sort(function(a,b){
+                        var el1 = a.split("/"), el2 = b.split("/");
+                        if (el1[2]>el2[2]){
+                            return 1;
+                        }
+                        return -1;
+                    });
+
+                    scope.ngModel=[].concat(formatedMoments);
+
                 };
 
                 /**
@@ -220,7 +265,7 @@ angular.module('multipleDatePicker', [])
                 /*Navigate to previous month*/
                 scope.previousMonth = function () {
                     if (!scope.disableBackButton) {
-                        var oldMonth = moment(scope.month);
+                        var oldMonth = moment(scope.month,scope.format);
                         scope.month = scope.month.subtract(1, 'month');
                         if (typeof scope.monthChanged == 'function') {
                             scope.monthChanged(scope.month, oldMonth);
@@ -232,7 +277,7 @@ angular.module('multipleDatePicker', [])
                 /*Navigate to next month*/
                 scope.nextMonth = function () {
                     if (!scope.disableNextButton) {
-                        var oldMonth = moment(scope.month);
+                        var oldMonth = moment(scope.month,scope.format);
                         scope.month = scope.month.add(1, 'month');
                         if (typeof scope.monthChanged == 'function') {
                             scope.monthChanged(scope.month, oldMonth);
@@ -264,15 +309,15 @@ angular.module('multipleDatePicker', [])
 
                 /*Generate the calendar*/
                 scope.generate = function () {
-                    var previousDay = moment(scope.month).date(0),
-                        firstDayOfMonth = moment(scope.month).date(1),
+                    var previousDay = moment(scope.month,scope.format).date(0),
+                        firstDayOfMonth = moment(scope.month,scope.format).date(1),
                         days = [],
-                        now = moment(),
-                        lastDayOfMonth = moment(firstDayOfMonth).endOf('month'),
+                        now = moment().format(scope.format),
+                        lastDayOfMonth = moment(firstDayOfMonth,scope.format).endOf('month'),
                         maxDays = lastDayOfMonth.date();
 
                     var createDate = function(){
-                        var date = moment(previousDay.add(1, 'days'));
+                        var date = moment(previousDay.add(1, 'days'),scope.format);
                         if(angular.isArray(scope.highlightDays)){
                             var hlDay = scope.highlightDays.filter(function(d){
                                 return date.isSame(d.date, 'day');

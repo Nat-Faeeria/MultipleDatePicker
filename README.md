@@ -1,3 +1,7 @@
+#This is a special version which supports double-way binding with ngModel and moment formating with format attribute
+##This version will probably not be updated, like ever. Unless if issues are posted, maybe. 
+
+
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/arca-computing/MultipleDatePicker?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 #What's new ?
